@@ -1,0 +1,5 @@
+files:
+- "synk.rb"
+- "fileBlackList.yml"
+- "whiteList.yml"
+- "bogus.yml"
