@@ -18,6 +18,6 @@ class ComboBoxExample < FXMainWindow
     end
 end
 
-    ComboBoxExample.new(FXApp.new)
-    app.create
-    app.run
+ComboBoxExample.new(FXApp.new("hi","ruby"))
+app.create
+app.run
