@@ -10,6 +10,14 @@ include Fox
 class Example < FXMainWindow
     def initialize(app)
         super(app, "Google Classroom Assignment Downloader")#skapar fönstret med dimitioner
+            # Make menu bar
+    menubar = FXMenuBar.new(self, LAYOUT_FILL_X)
+    filemenu = FXMenuPane.new(self)
+    FXMenuCommand.new(filemenu, "&Quit", nil, getApp(), FXApp::ID_QUIT)
+    FXMenuTitle.new(menubar, "&File", nil, filemenu)
+    helpmenu = FXMenuPane.new(self)
+    FXMenuTitle.new(menubar, "&Help", nil, helpmenu, LAYOUT_RIGHT)
+
     end
     def create
         super

@@ -2,7 +2,7 @@ require 'yaml'
 
 class Fileobserver
   def initialize
-    blackListfile = File.new("fileBlackList.yml", "r")
+    blackListfile = File.read("fileBlackList.yml", "r")
 
     @newInventory = {}
     @addList   = {}

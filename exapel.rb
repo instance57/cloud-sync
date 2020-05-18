@@ -1,103 +1,67 @@
 require 'fox16'
-
+require "yaml"
 include Fox
 
-class ComboBoxExample < FXMainWindow
-    
+#aplication = FXApp.new("hi","ruby")
+#main = FXMainWindow.new(aplication, "ruby",nil,nil,DECOR_ALL)
+#aplication.create()
+#main.show(PLACEMENT_SCREEN)
+#aplication.run()
+class Example < FXMainWindow
     def initialize(app)
-        super(app, "Google Classroom Assignment Downloader", :width => 800, :height => 400)
-        
-        v_frame = FXVerticalFrame.new( self, :opts => LAYOUT_FILL )
-        h_frame = FXHorizontalFrame.new(v_frame, :padding => 0 )
-        matrix = FXMatrix.new( h_frame, 3, MATRIX_BY_COLUMNS|LAYOUT_FILL )
-        
-        # ------------------------------------------------------------------------------------ #
-        
-        FXLabel.new( matrix, "Courses:" )
-        courses_listbox = FXListBox.new(matrix, :opts => LISTBOX_NORMAL|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
-        select_course_btn = FXButton.new(matrix, "Refresh", :opts => BUTTON_NORMAL)
-        
-        courses_listbox.numVisible = 6
-        
-        courses  = [ "Programmering 1", "Energiteknik 1", "Gymnasiearbete" ]
-        courses.each { |name| courses_listbox.appendItem(name) }
-        
-        # ------------------------------------------------------------------------------------ #
-        
-        FXLabel.new(matrix, "Assignments:")
-        assignment_listbox = FXListBox.new(matrix, :opts => LISTBOX_NORMAL|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
-        select_assignment_btn = FXButton.new(matrix, "Refresh", :opts => BUTTON_NORMAL)
-        
-        assignment_listbox.numVisible = 6
-        assignment_listbox.appendItem("Guess-the-number")
-        assignment_listbox.appendItem("Binär till decimal omvandlare")
-        assignment_listbox.appendItem("Mastermind")
-        
-        assignment_listbox.connect(SEL_COMMAND) do |sender, sel, data|
-            puts assignment_listbox.getItemText(data)
+        super(app, "Google Classroom Assignment Downloader", :width => 800, :height => 400)#skapar fönstret med dimitioner
+        mainframe = FXVerticalFrame.new( self, :opts => LAYOUT_FILL )
+        FXButton.new(mainframe, "Mode") do |button|
+            button.connect(SEL_COMMAND, method(:funcy))
         end
         
-        # ------------------------------------------------------------------------------------ #
-        
-        FXLabel.new(matrix, "Destination:")
-        target_dir_textfield = FXTextField.new(matrix, 60)                 # number of columns will affect width of comboboxes (LAYOUT_FILL_X)
-        set_target_dir_btn = FXButton.new(matrix, "New destination", :opts => BUTTON_NORMAL)
-        
-        set_target_dir_btn.connect(SEL_COMMAND) do
-            dialog = FXDirDialog.new(self, "Select")
-            if dialog.execute != 0
-                target_dir_textfield.text = dialog.directory
+
+            # table
+            whiteList = File.open("whiteList.yml", "r")
+            @yamlwhiteListList = YAML.load(whiteList)
+
+            dirlist = Dir.glob( '**/*', base:@yamlwhiteListList[0])
+            print(dirlist)
+
+            @table = FXTable.new(mainframe, :opts => LAYOUT_FILL)
+            @table.setTableSize(dirlist.length , 4)
+            @table.tableStyle |= TABLE_COL_SIZABLE
+    
+            @table.rowHeaderWidth = 10
+            @table.columnHeaderMode = LAYOUT_FIX_HEIGHT
+            @table.columnHeaderHeight = 10
+            x = 0
+            dirlist.each do |fi|
+                
+                @table.setItemText(x, 0, fi, SEL_COMMAND)
+                @table.setItemText(x, 1, "guess_the_number.rb")
+                @table.setItemText(x, 2, "2020-02-23 15:31:23")
+                whitebutton = FXButton.new(mainframe, "H", :opts => BUTTON_NORMAL | LAYOUT_FILL ) do |button|
+                    button.connect(SEL_COMMAND, method(:whiteList))
+                end
+                x +=1
+
             end
-        end
-        
-        # ------------------------------------------------------------------------------------ #
-        
-        listview_frame = FXHorizontalFrame.new(v_frame, :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL|LAYOUT_TOP, :padding => 0)
-        # list = FXList.new(listview_frame, :opts => LAYOUT_FILL)
 
-        @table = FXTable.new(listview_frame, :opts => LAYOUT_FILL)
-        @table.setTableSize(20, 4)
-        @table.tableStyle |= TABLE_COL_SIZABLE
-
-        @table.rowHeaderWidth = 0
-        @table.columnHeaderMode = LAYOUT_FIX_HEIGHT
-        @table.columnHeaderHeight = 0
-
-        @table.setItemText(0, 0, "David Andersson")
-        @table.setItemJustify(0, 0, FXTableItem::LEFT)
-        @table.setItemText(0, 1, "guess_the_number.rb")
-        @table.setItemJustify(0, 1, FXTableItem::LEFT)
-        @table.setItemText(0, 2, "2020-02-23 15:31:23")
-        @table.setItemJustify(0, 2, FXTableItem::LEFT)
-
-        # ------------------------------------------------------------------------------------ #
-        
-        text_frame = FXHorizontalFrame.new(v_frame, :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL|LAYOUT_TOP, :padding => 0)
-        text_area = FXText.new(text_frame, :opts => TEXT_READONLY|LAYOUT_FILL)
-        text_area.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit,\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,\nquis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-        
-    end
     
-    def assign_expense_account(account)
     end
-    
-    def assign_expense_category(category)
-    end
-    
     def create
         super
         show(PLACEMENT_SCREEN)
-        @table.fitColumnsToContents( 0 )
-        @table.fitColumnsToContents( 1 )
-        @table.fitColumnsToContents( 2 )
-
+    end
+    def funcy( sender, sel, ptr )
+        puts( sender, sel, ptr )
+    end
+    def whiteList( sender, sel, ptr )
+        puts("bep boop added to list", sender, sel, ptr )
     end
 end
 
+#no idea to figure this out it just works:
 if __FILE__ == $0
-    FXApp.new do |app|
-        ComboBoxExample.new(app)
-        app.create
-        app.run
+    FXApp.new do |app1|
+        Example.new(app1)
+        app1.create
+        app1.run
     end
 end
