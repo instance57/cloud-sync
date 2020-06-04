@@ -1,2 +1,4 @@
 path:
-- "C:/Users/valdemar.moberg/python/molnsync"
+- "C:/Users/valdemar.moberg/python/molnsync"  
+- "**/*"
+- "c:/users/roaming/.minecraft"
