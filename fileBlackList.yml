@@ -1,5 +1,5 @@
-files:
-- "synk.rb"
-- "fileBlackList.yml"
-- "whiteList.yml"
-- "bogus.yml"
+---
+- F:\molnsync\cloud-sync\synk.rb
+- F:\molnsync\cloud-sync\fileBlackList.yml
+- F:\molnsync\cloud-sync\whiteList.yml
+- F:\molnsync\cloud-sync\bogus.yml

@@ -2,27 +2,29 @@ require 'yaml'
 
 class Fileobserver
   def initialize
-    blackListfile = File.read("fileBlackList.yml", "r")
+    blackListfile = File.open("fileBlackList.yml", "r")
+
 
     @newInventory = {}
     @addList   = {}
     @deletedList  = {} 
     @editList = {}
-    @yamlBalckListList = YAML.load(blackListfile.read)["files"]
+    @yamlBalckListList = YAML.load(blackListfile.read)
     print @yamlBalckListList
 
     blackListfile.close
   end
 
-  def getnewinventory(wd = Dir.pwd, print=false)
+  def getnewinventory(wd = Dir.pwd, printdebug=false)
     @deletedList = @newInventory.clone
-    wd = Dir.pwd
+    #wd = Dir.pwd
+    puts (wd + "good day")
     dirlist = Dir.glob( '**/*', base:wd)
     dirlist.each do |file|
       puts file
       if @newInventory.has_key?(file) == false
-        if @yamlBalckListList.include?(file) == false
-          @addList[file] = File.mtime(file)
+        if @yamlBalckListList.include?(wd+"\\"+file) == false
+          @addList[file] = File.mtime(file)    
         end 
       end
       @deletedList.delete(file)
@@ -37,7 +39,7 @@ class Fileobserver
           @editList[file] = file
           @newInventory[file] = File.mtime(file)
         end
-        case print when true
+        case printdebug when true
           print(@newInventory[file])
           gets
         end
@@ -53,7 +55,7 @@ class Fileobserver
     #@newInventory = @newInventory + @addlist - deletelist
     #
     ### delete on finish... debug code ###
-    case print when true
+    case printdebug when true
       puts("################################################\n################\ninventory\n################")
       #puts @newInventory
       @newInventory.each do |file|
@@ -100,7 +102,8 @@ whiteListfile.close
 
 instance = Fileobserver.new
 while true
-  @whiteList["path"].each do |file|
+  @whiteList.each do |file|
+    puts file
     instance.getnewinventory(file , true)
   end
   gets

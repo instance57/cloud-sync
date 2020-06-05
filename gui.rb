@@ -11,32 +11,58 @@ class GUI < FXMainWindow
   def initialize(app)
     whiteList = File.open("whiteList.yml", "r")
     @yamlwhiteListList = YAML.load(whiteList)
+    whiteList.close
 
     @dirlist = Dir.glob("**/*", base: @yamlwhiteListList[0])
     print(@dirlist)
+
+    blackListRam = []
+    blackList = File.open("fileBlackList.yml", "r")
+    @yamlblackListList = YAML.load(blackList)
+    blackList.close
 
     super(app, "Google Classroom Assignment Downloader", :width => 800, :height => 400) #skapar fönstret med dimitioner
 
     mainframe = FXVerticalFrame.new(self, :opts => LAYOUT_FILL)
     topframe = FXHorizontalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
-    bottomframe = FXVerticalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
-    leftframe = FXVerticalFrame.new(topframe, :opts => LAYOUT_FILL)
-    rightframe = FXVerticalFrame.new(topframe) #, 1, :opts => LAYOUT_FILL ,:width => 50, :height => 2) #osäker på vad siffran gör men om du tar bort den förstörs det.
+    middleframe = FXVerticalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
+    bottomframe = FXHorizontalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
 
-    FXButton.new(rightframe, "end sync",:opts => BUTTON_NORMAL | LAYOUT_FILL   ) do |button|
-      button.connect(SEL_COMMAND, method(:funcy))
-    end
-    FXButton.new(rightframe, "save", :opts => BUTTON_NORMAL | LAYOUT_FILL) do |button|
+    FXButton.new(bottomframe, "Save", :opts => BUTTON_NORMAL) do |button|
       button.connect(SEL_COMMAND, method(:updateLists))
     end
-    FXButton.new(bottomframe, "add a path") do |button|
-      button.connect(SEL_COMMAND, method(:funcy))
-    end
-    @textfeild = FXTextField.new(bottomframe, 20, :opts =>LAYOUT_FILL)
+    FXButton.new(bottomframe, "Avsluta", :opts => BUTTON_NORMAL) do |button|
+      button.connect(SEL_COMMAND, method(:quit)) 
 
+    end
+   
+   
+    @textfield = FXText.new(middleframe, :opts => LAYOUT_FILL)
+
+    whiteListData = []
+    File.open("whiteList.yml", "r") do |f|
+      f.each_line do |line|
+        whiteListData << line
+      end
+    end
+    
+    addPathBtn = FXButton.new(bottomframe, "Add a path", :opts => BUTTON_NORMAL)
+    addPathBtn.connect(SEL_COMMAND) do
+      dialog = FXDirDialog.new(self, "Select")
+      if dialog.execute != 0
+        puts dialog.directory
+        whiteListData << dialog.directory
+        @textfield.text = whiteListData.join("\n")
+      end
+    end
+    @textfield.text = whiteListData.join(" ")
+
+    FXButton.new(bottomframe, "End sync", :opts => BUTTON_NORMAL) do |button|
+      button.connect(SEL_COMMAND, method(:quit))
+    end
     # table
 
-    @table = FXTable.new(leftframe, :opts => LAYOUT_FILL)
+    @table = FXTable.new(topframe, :opts => LAYOUT_FILL)
     @table.setTableSize(@dirlist.length, 4)
     @table.tableStyle |= TABLE_COL_SIZABLE
 
@@ -51,7 +77,14 @@ class GUI < FXMainWindow
       @table.setItemJustify(x, 1, FXTableItem::LEFT)
       @table.setItemText(x, 2, "2020-02-23 15:31:23")
       @table.setItemJustify(x, 2, FXTableItem::LEFT)
-      @table.setItemText(x, 3, "synced")
+
+      if @yamlblackListList.include?(@yamlwhiteListList[0]+"\\"+fi) == false
+        @table.setItemText(x, 3, "synced")
+        print("checking if ",@yamlblackListList[0]+"\\"+fi," is in ", @yamlblackListList,"\n\n")
+      else
+        @table.setItemText(x, 3, "unsynced")
+      end
+
       @table.setItemJustify(x, 3, FXTableItem::LEFT)
 
       @table.connect(SEL_COMMAND) do |sender, sel, data|
@@ -76,19 +109,35 @@ class GUI < FXMainWindow
     super
     show(PLACEMENT_SCREEN)
   end
+  #-- Städa upp och stäng ner programmet
+  def quit()
+    getApp().exit(0)
+  end
 
-  def funcy(sender, sel, ptr)
+  def funcy(sender, sel, ptr) # debug metod till knappar
     puts(sender, sel, ptr)
   end
+
+  #-- Städa upp och stäng ner programmet
+  def quit()
+    getApp().exit(0)
+  end
+
   def updateLists(sender, sel, ptr)
     #UPDATE WHITE LIST
-    blackListSync = {}
-    tableY = 1
+    blackListSync = { "files" => [] }
+    tableY = 0
     @dirlist.each do |objectFile|
-      blackListSync[:objectFile] = @table.getItemData(2,3)
+      puts(@table.getItemText(tableY, 3)[0])
+      if @table.getItemText(tableY, 3)[0] == "u" #checks
+        blackListSync["files"] << objectFile
+      end
+      tableY += 1
     end
     puts(blackListSync)
-
+    File.open("b.yaml", "w") do |out|
+      YAML.dump(blackListSync, out)
+    end
   end
 
   def whiteList(sender, sel, ptr)
