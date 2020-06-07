@@ -5,7 +5,7 @@ class Fileobserver
     blackListfile = File.open("fileBlackList.yml", "r")
 
 
-    @newInventory = {}
+    @newInventory = {}#should be imported from a inventory.yml
     @addList   = {}
     @deletedList  = {} 
     @editList = {}
@@ -15,19 +15,18 @@ class Fileobserver
     blackListfile.close
   end
 
-  def getnewinventory(wd = Dir.pwd, printdebug=false)
-    @deletedList = @newInventory.clone
-    #wd = Dir.pwd
+  def getnewinventory(wd = Dir.pwd, printdebug=false) #wd = working directory
+    @deletedList = @newInventory.clone #takes new inventory and clones it
     puts (wd + "good day")
-    dirlist = Dir.glob( '**/*', base:wd)
+    dirlist = Dir.glob( '**/*', base:wd) #creates a list of the current working directory(wd)
     dirlist.each do |file|
       puts file
       if @newInventory.has_key?(file) == false
         if @yamlBalckListList.include?(wd+"\\"+file) == false
-          @addList[file] = File.mtime(file)    
+          @addList[file] = File.mtime(file)  #adds object to add list if it has not  encounterd it before  
         end 
       end
-      @deletedList.delete(file)
+      @deletedList.delete(file)#deletes all files identical to current working directory creating a list of things that has been deleted
     end
 
     # 
@@ -35,12 +34,12 @@ class Fileobserver
     @newInventory.each do |file ,data|
       #kolla items metadata med dirlists metadata
       begin
-        if @newInventory[file] != File.mtime(file)
-          @editList[file] = file
-          @newInventory[file] = File.mtime(file)
+        if @newInventory[file] != File.mtime(file)    #
+          @editList[file] = file                      # checks if file has been edited
+          @newInventory[file] = File.mtime(file)      #
         end
         case printdebug when true
-          print(@newInventory[file])
+          print(@newInventory[file]) #if you need debug enable print debug
           gets
         end
 
@@ -54,7 +53,7 @@ class Fileobserver
     #@deletedList = @newList - dirlist (resulting in a list with everything that has been deleted
     #@newInventory = @newInventory + @addlist - deletelist
     #
-    ### delete on finish... debug code ###
+    # debug text
     case printdebug when true
       puts("################################################\n################\ninventory\n################")
       #puts @newInventory
@@ -97,8 +96,7 @@ end
 
 whiteListfile = File.new("whiteList.yml", "r")
 @whiteList = YAML.load(whiteListfile.read)
-whiteListfile.close
-#puts(@whiteList)
+whiteListfile.clones
 
 instance = Fileobserver.new
 while true

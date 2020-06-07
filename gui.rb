@@ -2,11 +2,6 @@ require "fox16"
 require "yaml"
 include Fox
 
-#aplication = FXApp.new("hi","ruby")
-#main = FXMainWindow.new(aplication, "ruby",nil,nil,DECOR_ALL)
-#aplication.create()
-#main.show(PLACEMENT_SCREEN)
-#aplication.run()
 class GUI < FXMainWindow
   def initialize(app)
     whiteList = File.open("whiteList.yml", "r")
@@ -24,10 +19,13 @@ class GUI < FXMainWindow
     super(app, "Google Classroom Assignment Downloader", :width => 800, :height => 400) #skapar fönstret med dimitioner
 
     mainframe = FXVerticalFrame.new(self, :opts => LAYOUT_FILL)
+
     topframe = FXHorizontalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
     middleframe = FXVerticalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
-    bottomframe = FXHorizontalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL)
+    bottomframe = FXHorizontalFrame.new(mainframe, :opts => MATRIX_BY_ROWS | LAYOUT_FILL) # creates the frames
 
+
+     #here i create all widgets like buttons and inputs
     FXButton.new(bottomframe, "Save", :opts => BUTTON_NORMAL) do |button|
       button.connect(SEL_COMMAND, method(:updateLists))
     end
@@ -38,11 +36,14 @@ class GUI < FXMainWindow
    
    
     @textfield = FXText.new(middleframe, :opts => LAYOUT_FILL)
-
-    whiteListData = []
+ #   here i open whitelist.yml to show it in text ad edit & save it later
+    @whiteListData = []
     File.open("whiteList.yml", "r") do |f|
       f.each_line do |line|
-        whiteListData << line
+        if line != "---\n"
+          @whiteListData << line
+        end
+
       end
     end
     
@@ -51,16 +52,16 @@ class GUI < FXMainWindow
       dialog = FXDirDialog.new(self, "Select")
       if dialog.execute != 0
         puts dialog.directory
-        whiteListData << dialog.directory
-        @textfield.text = whiteListData.join("\n")
+        @whiteListData << dialog.directory
+        @textfield.text = @whiteListData.join("\n- ")
       end
     end
-    @textfield.text = whiteListData.join(" ")
+    @textfield.text = @whiteListData.join(" ")
 
     FXButton.new(bottomframe, "End sync", :opts => BUTTON_NORMAL) do |button|
       button.connect(SEL_COMMAND, method(:quit))
     end
-    # table
+    # here i create a table with all listed stuff
 
     @table = FXTable.new(topframe, :opts => LAYOUT_FILL)
     @table.setTableSize(@dirlist.length, 4)
@@ -73,7 +74,6 @@ class GUI < FXMainWindow
     @dirlist.each do |fi|
       @table.setItemText(x, 0, fi, SEL_COMMAND)
       @table.setItemJustify(x, 0, FXTableItem::LEFT)
-      @table.setItemText(x, 1, "Synced")
       @table.setItemJustify(x, 1, FXTableItem::LEFT)
       @table.setItemText(x, 2, "2020-02-23 15:31:23")
       @table.setItemJustify(x, 2, FXTableItem::LEFT)
@@ -105,11 +105,11 @@ class GUI < FXMainWindow
     end
   end
 
-  def create
+  def create #grej för att starta gui
     super
     show(PLACEMENT_SCREEN)
   end
-  #-- Städa upp och stäng ner programmet
+  #städa upp och stäng ner programmet
   def quit()
     getApp().exit(0)
   end
@@ -118,13 +118,18 @@ class GUI < FXMainWindow
     puts(sender, sel, ptr)
   end
 
-  #-- Städa upp och stäng ner programmet
+  #städa upp och stäng ner programmet
   def quit()
     getApp().exit(0)
   end
 
-  def updateLists(sender, sel, ptr)
-    #UPDATE WHITE LIST
+  def updateLists(sender, sel, ptr)#kör denna när du stänger ner. detta sparar till .yml
+    
+    File.open("whiteList.yml", "w") do |out|
+      YAML.dump(@whiteListData, out)
+    end
+
+
     blackListSync = { "files" => [] }
     tableY = 0
     @dirlist.each do |objectFile|
@@ -135,17 +140,12 @@ class GUI < FXMainWindow
       tableY += 1
     end
     puts(blackListSync)
-    File.open("b.yaml", "w") do |out|
+    File.open("fileBlackList.yml", "w") do |out|
       YAML.dump(blackListSync, out)
     end
   end
 
-  def whiteList(sender, sel, ptr)
-    puts("bep boop added to list", sender, sel, ptr)
-  end
-end
-
-#no idea to figure this out it just works:
+#no idea to figure this out, it just works:
 if __FILE__ == $0
   FXApp.new do |app1|
     GUI.new(app1)
